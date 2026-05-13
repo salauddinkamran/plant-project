@@ -27,9 +27,9 @@ const AddPlantForm = () => {
       mutationReset();
       // Query key invalidete
     },
-    onError: (error) => {
-      console.log(error);
-    },
+    // onError: (error) => {
+    //   console.log(error);
+    // },
     onMutate: (payload) => {
       console.log("I will post this data --->", payload);
     },
@@ -235,11 +235,10 @@ const AddPlantForm = () => {
               type="submit"
               className="w-full cursor-pointer p-3 mt-5 text-center font-medium text-white transition duration-200 rounded shadow-md bg-lime-500 "
             >
-              Save & Continue
               {isPending ? (
                 <TbFidgetSpinner className="animate-spin m-auto" />
               ) : (
-                "Continue"
+                "Save & Continue"
               )}
             </button>
           </div>
@@ -250,5 +249,3 @@ const AddPlantForm = () => {
 };
 
 export default AddPlantForm;
-
-
