@@ -6,7 +6,7 @@ const admin = require("firebase-admin");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 3000;
 const decoded = Buffer.from(process.env.FB_SERVICE_KEY, "base64").toString(
-  "utf-8"
+  "utf-8",
 );
 const serviceAccount = JSON.parse(decoded);
 admin.initializeApp({
@@ -20,7 +20,7 @@ app.use(
     origin: [process.env.CLIENT_DOMAIN],
     credentials: true,
     optionSuccessStatus: 200,
-  })
+  }),
 );
 app.use(express.json());
 
@@ -53,6 +53,7 @@ async function run() {
     const db = client.db("plantDB");
     const plantsCollection = db.collection("plants");
     const orderCollection = db.collection("orders");
+    const userCollection = db.collection("users");
 
     // Save a plant data i db
     app.post("/plants", async (req, res) => {
@@ -140,7 +141,7 @@ async function run() {
           {
             _id: new ObjectId(session.metadata.plantId),
           },
-          { $inc: { quantity: -1 } }
+          { $inc: { quantity: -1 } },
         );
 
         return res.send({
@@ -179,10 +180,35 @@ async function run() {
       res.send(result);
     });
 
+    app.post("/user", async (req, res) => {
+      const userData = req.body;
+      userData.created_at = new Date().toISOString();
+      userData.last_loggedIn = new Date().toISOString();
+      userData.role = "customer"
+
+      const query = {
+        email: userData.email,
+      };
+      const alreadyExists = await userCollection.findOne(query);
+      console.log("User Already Exists --->", !!alreadyExists);
+      if (alreadyExists) {
+        console.log("Updating user info.....");
+        const result = await userCollection.updateOne(query, {
+          $set: {
+            last_loggedIn: new Date().toISOString(),
+          },
+        });
+        return res.send(result);
+      }
+      console.log("Saving new user info.....");
+      const result = await userCollection.insertOne(userData);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
+      "Pinged your deployment. You successfully connected to MongoDB!",
     );
   } finally {
     // Ensures that the client will close when you finish/error

@@ -4,7 +4,7 @@ import useAuth from "../../hooks/useAuth";
 import { toast } from "react-hot-toast";
 import { TbFidgetSpinner } from "react-icons/tb";
 import { Form, useForm } from "react-hook-form";
-import { imageUpload } from "../../utils";
+import { imageUpload, saveOrUpdateUser } from "../../utils";
 
 const SignUp = () => {
   const { createUser, updateUserProfile, signInWithGoogle, loading } =
@@ -30,13 +30,15 @@ const SignUp = () => {
       //   `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_API_KEY}`,
       //   formData,
       // );
-      const imageURL = await imageUpload(imageFile)
+      const imageURL = await imageUpload(imageFile);
       //2. User Registration
       const result = await createUser(email, password);
 
+      await saveOrUpdateUser({ name, email, image: imageURL });
+      //2. Generate image url from selected file
+
       //3. Save username & profile photo
       await updateUserProfile(name, imageURL);
-      console.log(result);
 
       navigate(from, { replace: true });
       toast.success("Signup Successful");
@@ -78,8 +80,12 @@ const SignUp = () => {
   const handleGoogleSignIn = async () => {
     try {
       //User Registration using google
-      await signInWithGoogle();
-
+      const { user } = await signInWithGoogle();
+      await saveOrUpdateUser({
+        name: user?.displayName,
+        email: user?.email,
+        image: user?.photoURL,
+      });
       navigate(from, { replace: true });
       toast.success("Signup Successful");
     } catch (err) {
