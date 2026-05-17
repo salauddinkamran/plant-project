@@ -5,10 +5,14 @@ import { toast } from "react-hot-toast";
 import { TbFidgetSpinner } from "react-icons/tb";
 import { Form, useForm } from "react-hook-form";
 import { imageUpload, saveOrUpdateUser } from "../../utils";
+import { useState } from "react";
+import { FaEye } from "react-icons/fa";
+import { FaEyeSlash } from "react-icons/fa";
 
 const SignUp = () => {
   const { createUser, updateUserProfile, signInWithGoogle, loading } =
     useAuth();
+  const [showPassword, setShowPassword] = useState();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state || "/";
@@ -192,22 +196,32 @@ const SignUp = () => {
                   Password
                 </label>
               </div>
-              <input
-                type="password"
-                // name="password"
-                autoComplete="new-password"
-                id="password"
-                // required
-                placeholder="*******"
-                className="w-full px-3 py-2 border rounded-md border-gray-300 focus:outline-lime-500 bg-gray-200 text-gray-900"
-                {...register("password", {
-                  required: "Password is required",
-                  minLength: {
-                    value: 6,
-                    message: "Password must be at least 6 characters",
-                  },
-                })}
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  // name="password"
+                  autoComplete="new-password"
+                  id="password"
+                  // required
+                  placeholder="*******"
+                  className="w-full px-3 py-2 border rounded-md border-gray-300 focus:outline-lime-500 bg-gray-200 text-gray-900"
+                  {...register("password", {
+                    required: "Password is required",
+                    minLength: {
+                      value: 6,
+                      message: "Password must be at least 6 characters",
+                    },
+                  })}
+                />
+                <button
+                  type="button"
+                  className="btn-xs btn absolute top-2.5 right-1.5"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+
               {errors.password && (
                 <p className="text-red-500 text-xs mt-1">
                   {errors.password.message}

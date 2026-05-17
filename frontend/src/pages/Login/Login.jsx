@@ -5,9 +5,13 @@ import useAuth from "../../hooks/useAuth";
 import { FcGoogle } from "react-icons/fc";
 import { TbFidgetSpinner } from "react-icons/tb";
 import { saveOrUpdateUser } from "../../utils";
+import { useState } from "react";
+import { FaEyeSlash } from "react-icons/fa";
+import { FaEye } from "react-icons/fa";
 
 const Login = () => {
   const { signIn, signInWithGoogle, loading, user, setLoading } = useAuth();
+  const [showPassword, setShowPassword] = useState();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -93,15 +97,24 @@ const Login = () => {
                   Password
                 </label>
               </div>
-              <input
-                type="password"
-                name="password"
-                autoComplete="current-password"
-                id="password"
-                required
-                placeholder="*******"
-                className="w-full px-3 py-2 border rounded-md border-gray-300 focus:outline-lime-500 bg-gray-200 text-gray-900"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  autoComplete="current-password"
+                  id="password"
+                  required
+                  placeholder="*******"
+                  className="w-full px-3 py-2 border rounded-md border-gray-300 focus:outline-lime-500 bg-gray-200 text-gray-900"
+                />
+                <button
+                  type="button"
+                  className="btn-xs btn absolute top-2.5 right-1.5"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
             </div>
           </div>
 

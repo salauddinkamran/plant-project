@@ -6,7 +6,7 @@ const admin = require("firebase-admin");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 3000;
 const decoded = Buffer.from(process.env.FB_SERVICE_KEY, "base64").toString(
-  "utf-8"
+  "utf-8",
 );
 const serviceAccount = JSON.parse(decoded);
 admin.initializeApp({
@@ -20,7 +20,7 @@ app.use(
     origin: [process.env.CLIENT_DOMAIN],
     credentials: true,
     optionSuccessStatus: 200,
-  })
+  }),
 );
 app.use(express.json());
 
@@ -54,6 +54,7 @@ async function run() {
     const plantsCollection = db.collection("plants");
     const orderCollection = db.collection("orders");
     const userCollection = db.collection("users");
+    const sellerCollection = db.collection("sellerRequests");
 
     // Save a plant data i db
     app.post("/plants", async (req, res) => {
@@ -141,7 +142,7 @@ async function run() {
           {
             _id: new ObjectId(session.metadata.plantId),
           },
-          { $inc: { quantity: -1 } }
+          { $inc: { quantity: -1 } },
         );
 
         return res.send({
@@ -156,9 +157,10 @@ async function run() {
     });
 
     // get all order for a customer by email
-    app.get("/my-orders/:email", async (req, res) => {
-      const email = req.params.email;
-      const result = await orderCollection.find({ customer: email }).toArray();
+    app.get("/my-orders", verifyJWT, async (req, res) => {
+      const result = await orderCollection
+        .find({ customer: req.tokenEmail })
+        .toArray();
       res.send(result);
     });
 
@@ -205,16 +207,27 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/user/role/:email", async (req, res) => {
-      const email = req.params.email;
-      const result = await userCollection.findOne({ email });
+    app.get("/user/role", verifyJWT, async (req, res) => {
+      console.log(req.tokenEmail);
+      const result = await userCollection.findOne({ email: req.tokenEmail });
       res.send({ role: result?.role });
+    });
+
+    app.post("/become-seller", verifyJWT, async (req, res) => {
+      const email = req.tokenEmail;
+      const alreadyExists = await sellerCollection.findOne({ email });
+      if (alreadyExists)
+        return res
+          .status(409)
+          .send({ message: "Already requested, wait koro." });
+      const result = await sellerCollection.insertOne({ email });
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
+      "Pinged your deployment. You successfully connected to MongoDB!",
     );
   } finally {
     // Ensures that the client will close when you finish/error
