@@ -8,7 +8,7 @@ import useAuth from "../../../hooks/useAuth";
 const SellerRequests = () => {
   const { user } = useAuth();
   const axiosSecure = useAxiosSecure();
-  const { data: requests = [], isLoading } = useQuery({
+  const { data: requests = [], isLoading, refetch } = useQuery({
     queryKey: ["seller-requests", user?.email],
     queryFn: async () => {
       const result = await axiosSecure("/seller-requests");
@@ -43,6 +43,7 @@ const SellerRequests = () => {
                 <tbody>
                   {requests.map((request) => (
                     <SellerRequestsDataRow
+                      refetch={refetch}
                       request={request}
                       key={request._id}
                     />
