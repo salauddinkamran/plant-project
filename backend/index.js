@@ -6,7 +6,7 @@ const admin = require("firebase-admin");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 3000;
 const decoded = Buffer.from(process.env.FB_SERVICE_KEY, "base64").toString(
-  "utf-8",
+  "utf-8"
 );
 const serviceAccount = JSON.parse(decoded);
 admin.initializeApp({
@@ -20,7 +20,7 @@ app.use(
     origin: [process.env.CLIENT_DOMAIN],
     credentials: true,
     optionSuccessStatus: 200,
-  }),
+  })
 );
 app.use(express.json());
 
@@ -142,7 +142,7 @@ async function run() {
           {
             _id: new ObjectId(session.metadata.plantId),
           },
-          { $inc: { quantity: -1 } },
+          { $inc: { quantity: -1 } }
         );
 
         return res.send({
@@ -224,10 +224,16 @@ async function run() {
       res.send(result);
     });
 
+    // get all seller request for admin
+    app.get("/seller-requests", verifyJWT, async (req, res) => {
+      const result = await sellerCollection.find().toArray();
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!",
+      "Pinged your deployment. You successfully connected to MongoDB!"
     );
   } finally {
     // Ensures that the client will close when you finish/error
